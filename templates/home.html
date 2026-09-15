@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Exam Scheduler - Setup</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-green: #10b981;
+            --border-color: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 90vh;
+        }
+        .container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+        h1 {
+            font-size: 1.5rem;
+            margin: 0 0 0.5rem 0;
+            color: var(--accent-green);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        input[type="file"], input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-main);
+            box-sizing: border-box;
+            font-size: 0.95rem;
+        }
+        input:focus {
+            outline: 2px solid var(--accent-green);
+            border-color: transparent;
+        }
+        .input-hint {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.35rem;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 0.85rem;
+            background-color: var(--accent-green);
+            color: #000;
+            font-weight: 700;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s ease;
+            margin-top: 1rem;
+        }
+        .btn-submit:hover {
+            background-color: #059669;
+        }
+        .error-banner {
+            background-color: #7f1d1d;
+            border: 1px solid #ef4444;
+            color: #fca5a5;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ Exam Scheduler Engine</h1>
+        <p class="subtitle">C++ Graph Coloring & Backtracking System</p>
+
+        {% if error %}
+            <div class="error-banner">⚠️ {{ error }}</div>
+        {% endif %}
+
+        <form action="/upload/" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Student Enrollment File (CSV)</label>
+                <input type="file" name="csv_file" accept=".csv" required>
+                <div class="input-hint">CSV header: roll_no, subject1, subject2, ...</div>
+            </div>
+
+            <div class="form-group">
+                <label>Maximum Exam Time Slots</label>
+                <input type="number" name="max_slots" value="8" min="1" max="50" required>
+            </div>
+
+            <div class="form-group">
+                <label>Room Configuration (Name:Capacity)</label>
+                <input type="text" name="room_config" value="Room A:60,Room B:40,Room C:30" placeholder="e.g. Room A:60,Room B:40" required>
+                <div class="input-hint">Comma-separated room names and seating capacity limits.</div>
+            </div>
+
+            <button type="submit" class="btn-submit">Generate Dashboard Schedule →</button>
+        </form>
+    </div>
+</body>
+</html>

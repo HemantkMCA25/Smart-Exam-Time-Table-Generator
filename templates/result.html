@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Timetable Analytics Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-green: #10b981;
+            --accent-blue: #3b82f6;
+            --accent-amber: #f59e0b;
+            --accent-purple: #a855f7;
+            --border-color: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 2rem;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: var(--accent-green);
+        }
+        .btn-group { display: flex; gap: 0.75rem; }
+        .btn {
+            color: var(--text-main);
+            background-color: var(--card-bg);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn:hover { border-color: var(--text-muted); background-color: #334155; }
+        .btn-primary { background-color: var(--accent-green); color: #000; border: none; }
+        .btn-primary:hover { background-color: #059669; }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+        .metric-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.25rem;
+        }
+        .metric-card .title {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .metric-card .value { font-size: 1.6rem; font-weight: 700; margin-top: 0.5rem; }
+
+        .section-title { font-size: 1.2rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+
+        .ai-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--accent-purple);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2.5rem;
+            line-height: 1.6;
+        }
+        .ai-card ul { margin: 0; padding-left: 1.25rem; }
+        .ai-card li { margin-bottom: 0.75rem; }
+
+        .complexity-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+        }
+        .complexity-item h4 { margin: 0 0 0.5rem 0; color: var(--accent-blue); font-size: 0.95rem; }
+        .complexity-item p { margin: 0; font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+
+        .canvas-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2.5rem;
+            text-align: center;
+        }
+        #graphCanvas {
+            background-color: #0b1120;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        .day-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .day-card .day-header {
+            background-color: #0f172a;
+            padding: 0.75rem 1rem;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--accent-blue);
+        }
+        .slot-item { padding: 1rem; border-bottom: 1px solid var(--border-color); }
+        .slot-item:last-child { border-bottom: none; }
+        .slot-time { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+        .slot-subject { font-size: 1.1rem; font-weight: 700; margin: 0.25rem 0; }
+        .slot-details { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem; }
+
+        .progress-bar-bg {
+            background-color: #0f172a;
+            border-radius: 4px;
+            height: 6px;
+            width: 100%;
+            overflow: hidden;
+            margin-top: 0.4rem;
+        }
+        .progress-bar-fill { height: 100%; background-color: var(--accent-green); border-radius: 4px; }
+        .progress-bar-fill.overflow { background-color: var(--accent-amber); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 Schedule Analytics Dashboard</h1>
+        <div class="btn-group">
+            <button onclick="exportCSV()" class="btn btn-primary">📥 Export CSV Schedule</button>
+            <a href="/" class="btn">← Re-configure</a>
+        </div>
+    </div>
+
+    <!-- Execution Metrics -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="title">Execution Speed</div>
+            <div class="value" style="color: var(--accent-green);">{{ data.execution_time_ms }} ms</div>
+        </div>
+        <div class="metric-card">
+            <div class="title">Students</div>
+            <div class="value">{{ data.students_count }}</div>
+        </div>
+        <div class="metric-card">
+            <div class="title">Subjects ($V$)</div>
+            <div class="value">{{ data.subjects_count }}</div>
+        </div>
+        <div class="metric-card">
+            <div class="title">Conflict Edges ($E$)</div>
+            <div class="value">{{ data.conflicts_count }}</div>
+        </div>
+        <div class="metric-card">
+            <div class="title">Slots Allocated</div>
+            <div class="value">{{ data.slots_count }}</div>
+        </div>
+    </div>
+
+    <!-- AI Schedule Rationale -->
+    <h2 class="section-title">🤖 AI Schedule Rationale</h2>
+    <div class="ai-card" id="aiExplanationContent"></div>
+
+    <!-- Algorithmic Complexity Profile -->
+    <h2 class="section-title">⚙️ Algorithm Performance Profile</h2>
+    <div class="complexity-card">
+        <div class="complexity-item">
+            <h4>Graph Construction Complexity</h4>
+            <p><strong>Time:</strong> $\mathcal{O}(S \cdot K^2)$ where $S$ is student count and $K$ is subjects per student.<br>
+               <strong>Space:</strong> $\mathcal{O}(V + E)$ adjacency storage.</p>
+        </div>
+        <div class="complexity-item">
+            <h4>Backtracking Graph Coloring</h4>
+            <p><strong>Time:</strong> $\mathcal{O}(M^V)$ worst-case bounded by Welsh-Powell ordering.<br>
+               <strong>Space:</strong> $\mathcal{O}(V)$ call stack memory.</p>
+        </div>
+        <div class="complexity-item">
+            <h4>Room Allocation Packing</h4>
+            <p><strong>Time:</strong> $\mathcal{O}(V \log V + V \cdot R)$ First-Fit Decreasing bin packing.<br>
+               <strong>Space:</strong> $\mathcal{O}(R)$ active room tracking.</p>
+        </div>
+    </div>
+
+    <!-- Network Graph Visualizer -->
+    <h2 class="section-title">🕸️ Conflict Graph Visual Representation</h2>
+    <div class="canvas-card">
+        <canvas id="graphCanvas" width="800" height="400"></canvas>
+    </div>
+
+    <!-- Calendar View Grid -->
+    <h2 class="section-title">📅 Exam Timetable View</h2>
+    <div class="calendar-grid">
+        {% regroup data.timetable by day as day_list %}
+        {% for day in day_list %}
+            <div class="day-card">
+                <div class="day-header">{{ day.grouper }}</div>
+                {% for item in day.list %}
+                    <div class="slot-item">
+                        <div class="slot-time">⏱️ {{ item.time }}</div>
+                        <div class="slot-subject">{{ item.subject }}</div>
+                        <div class="slot-details">
+                            <span>🏛️ {{ item.room }}</span>
+                            <span>👥 {{ item.students }} / {{ item.capacity }} seats</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill {% if item.students > item.capacity %}overflow{% endif %}" 
+                                 style="width: {% if item.capacity > 0 %}{% widthratio item.students item.capacity 100 %}{% else %}100{% endif %}%;">
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Safe Django Data Injection -->
+    {{ data|json_script:"schedule-data" }}
+
+    <script>
+        const rawData = JSON.parse(document.getElementById('schedule-data').textContent);
+
+        function renderGraph() {
+            const canvas = document.getElementById('graphCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width, height = canvas.height;
+            const centerX = width / 2, centerY = height / 2;
+            const radius = Math.min(centerX, centerY) - 60;
+
+            const subjects = Array.from(new Set(rawData.timetable.map(item => item.subject)));
+            const nodeCount = subjects.length;
+            if (nodeCount === 0) return;
+
+            const nodePositions = {};
+            subjects.forEach((subject, idx) => {
+                const angle = (idx / nodeCount) * 2 * Math.PI - Math.PI / 2;
+                nodePositions[subject] = {
+                    x: centerX + radius * Math.cos(angle),
+                    y: centerY + radius * Math.sin(angle)
+                };
+            });
+
+            ctx.clearRect(0, 0, width, height);
+
+            // Draw Conflict Edges
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.45)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            (rawData.conflicts || []).forEach(edge => {
+                const p1 = nodePositions[edge.from], p2 = nodePositions[edge.to];
+                if (p1 && p2) {
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                }
+            });
+            ctx.stroke();
+
+            // Draw Nodes
+            subjects.forEach(subject => {
+                const pos = nodePositions[subject];
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, 22, 0, 2 * Math.PI);
+                ctx.fillStyle = '#1e293b';
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#a855f7';
+                ctx.stroke();
+
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = 'bold 11px Segoe UI, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(subject, pos.x, pos.y);
+            });
+        }
+
+        function exportCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,Day,Time,Subject,Room,Students,Capacity\n";
+            (rawData.timetable || []).forEach(row => {
+                csvContent += `"${row.day}","${row.time}","${row.subject}","${row.room}",${row.students},${row.capacity}\n`;
+            });
+            const link = document.createElement("a");
+            link.setAttribute("href", encodeURI(csvContent));
+            link.setAttribute("download", "exam_schedule.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (rawData.ai_explanation && window.marked) {
+                document.getElementById('aiExplanationContent').innerHTML = marked.parse(rawData.ai_explanation);
+            }
+            renderGraph();
+        });
+    </script>
+</body>
+</html>

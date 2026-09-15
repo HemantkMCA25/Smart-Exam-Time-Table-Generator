@@ -1,0 +1,8 @@
+{
+  "success": false,
+  "students": 5,
+  "subjects": 5,
+  "conflicts": 10,
+  "error": "No valid schedule could be generated with the supplied slots and rooms.",
+  "timetable": []
+}
