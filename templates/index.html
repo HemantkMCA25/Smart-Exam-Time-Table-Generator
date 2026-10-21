@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam Scheduler</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #f5f6f8; color: #1f2937; margin: 0; padding: 2rem 1rem; }
+  main { max-width: 760px; margin: 0 auto; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 2rem; }
+  h1 { margin: 0 0 .25rem; font-size: 1.4rem; }
+  .muted { color: #6b7280; font-size: .9rem; margin: 0 0 1.5rem; }
+  label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: 1rem; }
+  input { display: block; width: 100%; box-sizing: border-box; margin-top: .35rem; padding: .55rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: .95rem; }
+  button { padding: .6rem 1.2rem; background: #111827; color: #fff; border: 0; border-radius: 6px; font-size: .95rem; cursor: pointer; }
+  .error { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; padding: .75rem; border-radius: 6px; margin-top: 1.5rem; }
+  .summary { margin: 2rem 0 .75rem; font-size: .9rem; color: #374151; }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th, td { text-align: left; padding: .5rem; border-bottom: 1px solid #e5e7eb; }
+  th { color: #6b7280; font-weight: 600; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Exam Scheduler</h1>
+  <p class="muted">Upload enrollments to generate a clash-free timetable.</p>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <label>Enrollment CSV (roll_no, subject1, subject2, ...)
+      <input type="file" name="csv_file" accept=".csv" required>
+    </label>
+    <label>Maximum time slots
+      <input type="number" name="max_slots" value="{{ max_slots|default:8 }}" min="1" max="50" required>
+    </label>
+    <label>Rooms (Name:Capacity, comma separated)
+      <input type="text" name="room_config" value="{{ room_config|default:'Room A:60,Room B:40,Room C:30' }}" required>
+    </label>
+    <button type="submit">Generate timetable</button>
+  </form>
+
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+
+  {% if rows %}
+  <p class="summary">
+    {{ students }} students · {{ subjects }} subjects · {{ conflicts }} conflicts · {{ slots }} slots used
+  </p>
+  <table>
+    <tr><th>Day</th><th>Session</th><th>Subject</th><th>Room</th><th>Students / Seats</th></tr>
+    {% for r in rows %}
+    <tr>
+      <td>{{ r.day }}</td><td>{{ r.session }}</td><td>{{ r.subject }}</td>
+      <td>{{ r.room }}</td><td>{{ r.students }} / {{ r.capacity }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+</main>
+</body>
+</html>
